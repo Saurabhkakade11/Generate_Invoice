@@ -1,0 +1,276 @@
+﻿@{
+    ViewBag.Title = "GenerateInvoice";
+    Layout = "~/Views/Shared/_Invoice_Layout.cshtml";
+}
+
+<script>
+
+    // Array to store the selected products
+    var Productdata = [];
+    var finaltotal = 0;
+
+    // Fetches customer data and populates the dropdown
+    function FillCustomer() {
+        $.ajax({
+            url: '/Invoice/GetALLLLLCustomers',  // API to get all customers
+            method: 'GET',
+            success: function (resp) {
+                $.each(resp, function (i, d) {
+                    $("#ddcustomer").append("<option value='" + d.customer_id + "'>" + d.customer_name + "</option>");
+                });
+            },
+            error: function () {
+                alert("Error loading customers."); // Error handling for customer data
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        // Load customer data on page load
+        FillCustomer();
+
+        // Trigger calculation when purchase quantity changes
+        $("#txtpquantity").on("input", function () {
+            CalculatetblTotal();
+        });
+
+        // Fetch product details when a product is selected
+        $("#product_id").change(function () {
+            FetchProduct();
+        });
+
+        // Add product to the list when button is clicked
+        $("#btnadd").click(function () {
+            AddProduct();
+        });
+    });
+
+
+    // Fetches product details by product ID
+    function FetchProduct() {
+        var prodid = $("#product_id").val();
+        if (prodid) {
+            $.ajax({
+                url: "/Invoice/GetProductByID/" + prodid,
+                method: "GET",
+                success: function (resp) {
+                    if (resp) {
+                        $("#txtrate").val(resp.rate);
+                        $("#txtgst").val(resp.GST);
+                        $("#txtstockquantity").val(resp.stock_quantity);
+                    }
+                },
+                error: function () {
+                    alert("Error fetching product details.");
+                }
+            });
+        }
+    }
+
+    // Calculates the total price based on rate, GST, and quantity
+    function CalculatetblTotal() {
+        var rate = parseFloat($("#txtrate").val()) || 0;
+        var gst = parseFloat($("#txtgst").val()) || 0;
+        var purquantity = parseFloat($("#txtpquantity").val()) || 0;
+
+        // Validate inputs
+        if (purquantity <= 0 || isNaN(rate) || isNaN(gst)) {
+            $("#txttotal").val("");
+            return;
+        }
+
+        // Calculate total with GST
+        var total = (rate + (rate * gst) / 100) * purquantity;
+        $("#txttotal").val(total.toFixed(2)); // Show total with 2 decimal points
+
+        // Check if purchase quantity exceeds stock
+        var stockquantity = parseFloat($("#txtstockquantity").val()) || 0;
+        if (purquantity > stockquantity) {
+            alert("Please check stock quantity!");
+            $("#txtpquantity").val("");
+            $("#txttotal").val("");
+        }
+    }
+
+    // Adds product to the product table and clears input fields
+    function AddProduct() {
+        var prodid = $("#product_id").val();
+        var productName = $("#product_id option:selected").text();
+        var rate = Number($("#txtrate").val());
+        var gst = Number($("#txtgst").val());
+        var pquantity = $("#txtpquantity").val();
+        var total = $("#txttotal").val();
+
+        // Validate product input
+        //isNaN  means is not a number.
+
+        if (!prodid || !pquantity || isNaN(total) || total <= 0) {
+            alert("Please select a product and enter a valid quantity.");
+            return;
+        }
+
+        var prodtable = {
+            "product_id": prodid,
+            "product_name": productName,
+            "rate": rate,
+            "GST": gst,
+            "quantity": pquantity,
+            "total": total
+        };
+
+        Productdata.push(prodtable); // Add product to array
+        DisplayTable();  // Display updated table
+        ClearData(); // Clear form fields
+    }
+
+    // Displays the products table and calculates the final total
+    function DisplayTable() {
+        $("#tbldata").empty();
+
+        finaltotal = 0;
+
+        // Populate table rows for each product
+        $.each(Productdata, function (i, d) {
+            finaltotal += Number(d.total);
+
+            $("#tbldata").append("<tr><td>" + (i + 1) +
+                "</td><td>" + d.product_name +
+                "</td><td>" + d.rate +
+                "</td><td>" + d.GST +
+                "</td><td>" + d.quantity +
+                "</td><td>" + d.total + "</td></tr>");
+        });
+
+        $("#final").html(finaltotal); // Display final total
+    }
+
+    // Clears input fields after adding a product
+    function ClearData() {
+        $("#product_id").val("");
+        $("#txtrate").val("");
+        $("#txtgst").val("");
+        $("#txtstockquantity").val("");
+        $("#txttotal").val("");
+        $("#txtpquantity").val("");
+    }
+
+    // Submits the invoice to the server
+    function SubmitInvoice() {
+        if (Productdata.length === 0) {
+
+
+            //In JavaScript, === is called the strict equality operator,
+            //while == is the loose equality operator.
+
+
+            alert("Please add at least one product.");
+            return;
+        }
+
+        var st = {
+            "customer_id": $("#ddcustomer").val(),
+            "invoice_date": $("#txtdate").val(),
+            "total_amount": finaltotal,
+            "InvoiceProduct": Productdata
+        };
+
+        // Validate customer and date
+        if (!st.customer_id || !st.invoice_date) {
+            alert("Please select a customer and date.");
+            return;
+        }
+
+        // Send invoice data to the server
+        $.ajax({
+            url: '/Invoice/GenerateInvoice',
+            method: 'POST',
+            data: JSON.stringify(st),
+            contentType: 'application/json',
+            success: function (resp) {
+                alert("Invoice generated successfully.");
+                location.reload();
+            },
+            error: function () {
+                alert("Error generating invoice.");
+            }
+        });
+    }
+</script>
+
+<h2>Generate Invoice</h2>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <label>Customer</label>
+            <select id="ddcustomer" class="form-control">
+                <option selected disabled>Select Customer</option>
+                <!-- Add more customers as needed -->
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label>Invoice Date</label>
+            <input type="date" id="txtdate" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-2">
+            <label>Product</label>
+            @Html.DropDownList("product_id", ViewBag.vproduct as SelectList, "Select Product", new { @class = "form-control" })
+
+            <!-- Add more products as needed -->
+
+        </div>
+        <div class="col-md-1">
+            <label>Rate</label>
+            <input type="text" id="txtrate" class="form-control" disabled />
+        </div>
+        <div class="col-md-1">
+            <label>GST</label>
+            <input type="text" id="txtgst" class="form-control" disabled />
+        </div>
+        <div class="col-md-2">
+            <label>Stock Inventory</label>
+            <input type="text" id="txtstockquantity" class="form-control" disabled />
+        </div>
+        <div class="col-md-2">
+            <label>Purchase Quantity</label>
+            <input type="text" id="txtpquantity" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label>Total</label>
+            <input type="text" id="txttotal" class="form-control" disabled />
+        </div>
+        <div class="col-md-2">
+            <label>Add Product</label>
+            <input type="button" id="btnadd" value="+" class="form-control" />
+        </div>
+    </div>
+
+    <hr />
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Sr No</th>
+                <th>Product Name</th>
+                <th>Rate</th>
+                <th>GST</th>
+                <th>Purchase Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody id="tbldata"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" style="text-align:right">Total</td>
+                <td><b id="final"></b></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <input type="button" value="Submit" class="btn btn-primary" onclick="SubmitInvoice()" />
+    @Html.ActionLink("VIEW-INVOICE", "AllInvoices", "Invoice", new { @class = "btn btn-primary btnvoice" })
+
+</div>

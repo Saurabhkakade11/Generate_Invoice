@@ -1,0 +1,40 @@
+﻿@model Generate_Invoice.Models.Customer
+@{
+    ViewBag.Title = "Edit Customer";
+    Layout = "~/Views/Shared/_Invoice_Layout.cshtml";
+}
+
+<h2>Edit Customer</h2>
+
+@using (Html.BeginForm("Edit", "Customer", FormMethod.Post))
+{
+    @Html.HiddenFor(c => c.customer_id)
+    <table>
+        <tr>
+            <td>Customer Name:</td>
+            <td>@Html.TextBoxFor(c => c.customer_name, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td>Email Address:</td>
+            <td>@Html.TextBoxFor(c => c.customer_email, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td>Mobile No:</td>
+            <td>@Html.TextBoxFor(c => c.mobile_no, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td>City:</td>
+            <td>@Html.TextBoxFor(c => c.city, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Update" class="btn btn-primary" />
+            </td>
+        </tr>
+    </table>
+}
+
+@if (TempData["msg"] != null)
+{
+    <div class="alert alert-info">@TempData["msg"]</div>
+}

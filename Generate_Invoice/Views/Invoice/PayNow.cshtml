@@ -1,0 +1,85 @@
+﻿@model Generate_Invoice.Models.InvoicePayment
+@{
+    ViewBag.Title = "PayNow";
+    Layout = "~/Views/Shared/_Invoice_Layout.cshtml";
+}
+
+<h2>PayNow</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        @using (Html.BeginForm("PayNow", "Invoice", FormMethod.Post))
+        {
+            <div class="card">
+                <div class="card-header">
+                    <label>Pay Now</label>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label>Payment Date</label>
+                        @Html.TextBoxFor(e => e.payment_date, new { Type = "date", @class = "form-control" })
+                    </div>
+                    <div class="mb-3">
+                        <label>Payment Amount</label>
+                        @Html.TextBoxFor(e => e.payment_amount, new { @class = "form-control" })
+                    </div>
+                    <div class="mb-3">
+                        <label>Payment Mode</label>
+                        @Html.TextBoxFor(e => e.payment_mode, new { @class = "form-control" })
+                    </div>
+                    <div class="mb-3">
+                        <label>Payment Description</label>
+                        @Html.TextAreaFor(e => e.payment_description, new { @class = "form-control" })
+                    </div>
+                    <div class="card-footer">
+                        <input type="submit" value="Submit" class="btn btn-primary" />
+                    </div>
+                </div>
+            </div>
+
+        }
+    </div>
+
+
+
+    @*invoice details*@
+
+    <div class="col-md-4">
+        <div class="row">
+            @Html.HiddenFor(e => e.invoice_id)
+            <div class="card">
+                <div class="card-header">
+                    <label>Invoice Details</label>
+                </div>
+
+                <div class="card-body">
+                    <table>
+                        <tr>
+                            <td>Invoice Date:</td>
+                            <td><b>@ViewBag.vinvoice.invoice_date</b></td>
+                        </tr>
+                        <tr>
+                            <td>Customer Name:</td>
+                            <td><b>@ViewBag.vinvoice.customer_name</b></td>
+                        </tr>
+                        <tr>
+                            <td>Total Amount:</td>
+                            <td><b>@ViewBag.vinvoice.total_amount</b></td>
+                        </tr>
+                        <tr>
+                            <td>Paid Amount Till Date:</td>
+                            <td><b>@ViewBag.vinvoice.paid_amount</b></td>
+                        </tr>
+                        <tr>
+                            <td>Remaining Amount:</td>
+                            <td><b>@ViewBag.vinvoice.remaining_amount</b></td>
+                        </tr>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>  

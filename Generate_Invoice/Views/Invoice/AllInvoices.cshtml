@@ -1,0 +1,55 @@
+﻿
+@{
+    ViewBag.Title = "ViewAllInvoices";
+    Layout = "~/Views/Shared/_Invoice_Layout.cshtml";
+}
+
+<h2>AllInvoices</h2>
+
+
+<div>
+    @Html.ActionLink("NEW INVOICE", "GenerateInvoice", "Invoice", new { @class = "btn btn-primary btnvoice" })
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Sr No</th>
+                <th>Invoice Date</th>
+                <th>Customer Name</th>          
+                <th>Invoice Amount</th>
+                <th>Paid Amount</th>
+                <th>Remaining Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int i = 1;
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>@item.invoice_date</td>
+                    <td>@item.customer_name</td>
+                    <td>@item.total_amount</td>
+                    <td>@item.paid_amount</td>
+                    <td>@item.remaining_amount</td>
+                    <td>@item.status</td>
+                    <td>
+                        @if (item.status == "Paid")
+                        {
+                            @Html.ActionLink("View Invoice", "ViewInvoice", new { @id = item.invoice_id })
+                        }
+                        else
+                        {
+                            @Html.ActionLink("View Invoice", "ViewInvoice", new { @id = item.invoice_id })
+                            <span>&nbsp;</span>
+                            @Html.ActionLink("Pay Now", "PayNow", new { @id = item.invoice_id })
+                        }
+                    </td>
+                </tr>
+                i++;
+            }
+    </table>
+</div>

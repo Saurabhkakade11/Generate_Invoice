@@ -1,0 +1,126 @@
+﻿@model Generate_Invoice.Models.Customer
+@{
+    ViewBag.Title = "Customer Index";
+    Layout = "~/Views/Shared/_Invoice_Layout.cshtml";
+}
+
+<h2>Customer Details</h2>
+@*
+
+    @using (Html.BeginForm(actionName, controllerName, formMethod, htmlAttributes))
+    {
+        // Form elements go here
+    }
+
+    Parameters Breakdown
+
+        actionName: The name of the action method to be invoked ("Create" in your case).
+        controllerName: The controller where the action resides ("Customer").
+        formMethod: Specifies HTTP method (FormMethod.Post or FormMethod.Get).
+        htmlAttributes (Optional): Allows adding HTML attributes to the <form> tag.
+
+*@
+
+@using (Html.BeginForm("Create", "Customer", FormMethod.Post))
+{
+    <table>
+        <tr>
+            <td>Customer Name:</td>
+            <td>@Html.TextBoxFor(e => e.customer_name, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td>Email Address:</td>
+            <td>@Html.TextBoxFor(e => e.customer_email, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td>Mobile No:</td>
+            <td>@Html.TextBoxFor(e => e.mobile_no, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td>City:</td>
+            <td>@Html.TextBoxFor(e => e.city, new { @class = "form-control" })</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Add Customer" class="btn btn-primary" />
+            </td>
+        </tr>
+    </table>
+}
+
+
+
+<hr />
+
+@if (!string.IsNullOrEmpty(ViewBag.msg as string))
+{
+    <div id="alertMessage" class="alert alert-info">
+        @ViewBag.msg
+    </div>
+}
+
+@if (TempData["msg"] != null)
+{
+    <div id="alertMessage" class="alert alert-info">
+        @TempData["msg"]
+    </div>
+}
+<script>
+    // Hide and remove the alert after 2 seconds
+    setTimeout(() => document.getElementById("alertMessage").remove(), 3000);
+</script>
+<hr />
+
+
+
+@if (ViewBag.vcustomer != null && ViewBag.vcustomer.Count > 0)
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Email Address</th>
+                <th>Mobile No</th>
+                <th>City</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ViewBag.vcustomer)
+            {
+                <tr>
+                    <td>@item.customer_id</td>
+                    <td>@item.customer_name</td>
+                    <td>@item.customer_email</td>
+                    <td>@item.mobile_no</td>
+                    <td>@item.city</td>
+                    <td>
+                        @*  from my understanding @Html.ActionLink(linkTextLable, actionName, controllerName, routeValues, htmlAttributes)*@
+                        @Html.ActionLink("Edit", "Edit", "Customer", new { id = item.customer_id }, new { @class = "btn btn-warning btn-sm" })
+                        @Html.ActionLink("Delete", "Delete", "Customer", new { id = item.customer_id }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No customer records found.</p>
+}
+
+
+<!-- JavaScript for Timeout Handling -->
+<!--<script>
+    // Hide the alert message after 5 seconds
+    setTimeout(function () {
+        const alertMessage = document.getElementById("alertMessage");
+        if (alertMessage) {
+            alertMessage.style.transition = "opacity 1s ease-out";
+            alertMessage.style.opacity = "0"; // Fade out
+            setTimeout(() => alertMessage.remove(), 1000); // Remove after fade-out
+        }
+    }, 3000); // 5000 ms = 5 seconds
+</script>-->
+<!-- JavaScript for Timeout Handling -->

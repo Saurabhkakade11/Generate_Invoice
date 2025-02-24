@@ -1,0 +1,221 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Invoice_Layout.cshtml";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Index</title>
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            fetchproduct();
+
+            $("#btnaddproduct").click(btnaddproduct);
+            $("#btnupdateproduct").click(btnupdateproduct);
+        });
+
+        // Add Product
+        function btnaddproduct() {
+            var product = {
+                "product_name": $("#txtpname").val(),
+                "rate": Number($("#txtrate").val()),
+                "GST": Number($("#txtgst").val()),
+                "stock_quantity": Number($("#txtstockquantity").val())
+            };
+
+            $.ajax({
+                url: "/Product/AddProduct",
+                method: "POST",
+                data: JSON.stringify(product),
+                contentType: "application/json",
+                success: function (resp) {
+                    alert(resp);
+
+                    clearForm(); // Clear form after adding product
+
+                    fetchproduct();
+                },
+                error: function () {
+                    alert("Failed to add product");
+                }
+            });
+        }
+
+        // Fetch and display all products
+        function fetchproduct() {
+            $.ajax({
+                url: "/Product/GetAllProduct",
+                method: "GET",
+                contentType: "application/json",
+                success: function (resp) {
+                    $("#tbldata").empty();
+                    $.each(resp, function (i, d) {
+                        $("#tbldata").append(`
+                                <tr>
+                                    <td>${d.product_id}</td>
+                                    <td>${d.product_name}</td>
+                                    <td>${d.rate}</td>
+                                    <td>${d.GST}</td>
+                                    <td>${d.stock_quantity}</td>
+                                    <td><button onclick='oncViewProduct(${d.product_id})'>VIEW</button></td>
+                                    <td><button onclick='oncDeleteProduct(${d.product_id})'>DELETE</button></td>
+                                </tr>
+                            `);
+
+
+                    //// --- --- --- -- Old way -- -- --- --
+                    //    $("#tbldata").append("<tr><td>" + d.product_id + "</td><td>" + d.product_name + "</td><td>" + d.rate + "</td><td>" + d.GST + "</td><td>" + d.stock_quantity +
+                    //        "</td><td><input type='button' value='View' onclick='ViewProduct(" + d.product_id + ")'/></td><td><input type='button' value='Delete' onclick='DeleteProduct(" + d.product_id + ")'/></td></tr>");
+                    //});
+                    });
+                },
+                error: function () {
+                    alert("Failed to fetch products");
+                }
+            });
+        }
+
+
+
+        var varnullproduct = 0;
+        // View product details by ID
+        function oncViewProduct(pid) {
+            $.ajax({
+                url: "/Product/GetProductById/" + pid,
+                method: "GET",
+                contentType: "application/json",
+                success: function (resp) {
+                    $("#txtpname").val(resp.product_name);
+                    $("#txtrate").val(resp.rate);
+                    $("#txtgst").val(resp.GST);
+                    $("#txtstockquantity").val(resp.stock_quantity);
+                    varnullproduct = resp.product_id;
+                },
+                error: function () {
+                    alert("Failed to fetch product details");
+                }
+            });
+        }
+
+        // Delete product by ID
+        function oncDeleteProduct(prodid) {
+            if (!confirm("Are you sure you want to delete this product?")) {
+                return;
+            }
+
+            $.ajax({
+                url: "/Product/DeleteProduct",
+                method: "POST",
+                data: JSON.stringify({ id: prodid }),
+                contentType: "application/json",
+                success: function (resp) {
+                    alert(resp);
+                    fetchproduct();
+                },
+                error: function () {
+                    alert("Failed to delete product");
+                }
+            });
+        }
+
+        // Update product details
+        function btnupdateproduct() {
+            var product = {
+                "product_id": varnullproduct,
+                "product_name": $("#txtpname").val(),
+                "rate": Number($("#txtrate").val()),
+                "GST": Number($("#txtgst").val()),
+                "stock_quantity": Number($("#txtstockquantity").val())
+            };
+
+            $.ajax({
+                url: "/Product/UpdateProduct",
+                method: "POST",
+                data: JSON.stringify(product),
+                contentType: "application/json",
+                success: function (resp) {
+                    alert(resp);
+
+                    clearForm(); // Clear form after updating product
+
+                    fetchproduct();
+                },
+                error: function () {
+                    alert("Failed to update product");
+                }
+            });
+        }
+
+
+
+
+
+        // Clear the form fields
+        function clearForm() {
+            $("#txtpname").val("");
+            $("#txtrate").val("");
+            $("#txtgst").val("");
+            $("#txtstockquantity").val("");
+            varnullproduct = 0; // Reset product ID tracking for updates
+        }
+
+
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">      
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Add or Update Product</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label>Product Name</label>
+                            <input type="text" class="form-control" id="txtpname" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Rate</label>
+                            <input type="text" class="form-control" id="txtrate" />
+                        </div>
+                        <div class="mb-3">
+                            <label>GST</label>
+                            <input type="text" class="form-control" id="txtgst" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Stock Quantity</label>
+                            <input type="text" class="form-control" id="txtstockquantity" />
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <input type="button" value="Add" id="btnaddproduct" class="btn btn-primary" />
+                        <input type="button" value="Update" id="btnupdateproduct" class="btn btn-info" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Product Name</th>
+                            <th>Rate</th>
+                            <th>GST</th>
+                            <th>Stock Quantity</th>
+                            <th>Action View </th>
+                            <th>Action Delete </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbldata"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
