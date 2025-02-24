@@ -1,0 +1,156 @@
+﻿@model Generate_Invoice.Models.InvoiceDetail
+
+@{
+    ViewBag.Title = "View Invoice";
+    Layout = "~/Views/Shared/_Inventory_Layout.cshtml";
+}
+
+<h2>View Invoice</h2>
+
+<script>
+    function PrintInvoice() {
+        var printContent = document.getElementById("dv").innerHTML;
+        var printWindow = window.open("", "", "width=800,height=600");
+        printWindow.document.write("<html><head><title>Invoice</title></head><body>");
+        printWindow.document.write(printContent);
+        printWindow.document.write("</body></html>");
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+
+<input type="button" value="Print" id="btnPrint" onclick="PrintInvoice()" />
+
+<div id="dv">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h2>!! Invoice !!</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <table>
+                <tr>
+                    <td>Invoice Number:</td>
+                    <td><b>@Model.invoice_id</b></td>
+                </tr>
+                <tr>
+                    <td>Invoice Date:</td>
+                    <td><b>@(Model.invoice_date?.ToShortDateString() ?? "N/A")</b></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <table>
+                <tr>
+                    <td>Customer Name:</td>
+                    <td><b>@(Model.customer?.customer_name ?? "N/A")</b></td>
+                </tr>
+                <tr>
+                    <td>Mobile Number:</td>
+                    <td><b>@(Model.customer?.mobile_no ?? "N/A")</b></td>
+                </tr>
+                <tr>
+                    <td>Email Address:</td>
+                    <td><b>@(Model.customer?.customer_email ?? "N/A")</b></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <hr />
+        <h4>Purchase Details</h4>
+    </div>
+
+    <div class="row">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Sr No</th>
+                    <th>Product Name</th>
+                    <th>Rate</th>
+                    <th>GST</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    float finalTotal = 0;
+                }
+                @foreach (var item in Model.InvoiceProducts)
+                {
+                    float rate = (float)item.Product.rate;
+                    float gst = (float)item.Product.GST;
+                    float qty = (float)item.quantity;
+                    float total = (rate + (rate * gst / 100)) * qty;
+                    finalTotal += total;
+                    <tr>
+                        <td>@i</td>
+                        <td>@item.Product.product_name</td>
+                        <td>@rate</td>
+                        <td>@gst</td>
+                        <td>@qty</td>
+                        <td>@total</td>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" class="text-right">Total</td>
+                    <td><b>@finalTotal</b></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="row text-center">
+        <hr />
+        <h4>Payment Details</h4>
+    </div>
+
+    <div class="row">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Sr No</th>
+                    <th>Payment Date</th>
+                    <th>Payment Amount</th>
+                    <th>Payment Mode</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ i = 1; }
+                @foreach (var item in Model.InvoicePayments)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@(item.payment_date?.ToShortDateString() ?? "N/A")</td>
+                        <td>@item.payment_amount</td>
+                        <td>@item.payment_mode</td>
+                        <td>@item.payment_description</td>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        <p>
+            <span>Total Amount=<b> @Model.total_amount</b></span>
+            <span> | Paid Amount = <b>@ViewBag.invoice.paid_amount</b></span>
+            <span> | Remaining Amount = <b>@ViewBag.invoice.remaining_amount</b></span>
+        </p>
+    </div>
+</div>
