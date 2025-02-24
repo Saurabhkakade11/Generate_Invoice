@@ -128,12 +128,5 @@ cd inventory-billing-system
 
 ---
 
-## Contributors
-
-👨‍💻 **Your Name** – [GitHub Profile](https://github.com/yourusername)\
-📧 Contact: saurabhkakade1703@gmail.com
-
----
-
 This **README.md** file provides a detailed overview of your **Inventory Billing System**, making it easy for others (or even yourself) to understand, set up, and use the project. 🚀
 
